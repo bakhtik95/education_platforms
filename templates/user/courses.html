@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Mening kurslarim{% endblock %}
+{% block page_title %}Mening kurslarim{% endblock %}
+
+{% block content %}
+<div class="courses-container">
+    {% if courses %}
+        <div class="courses-grid">
+            {% for course in courses %}
+            <div class="course-card">
+                <div class="course-card-image">
+                    {% if course.image and course.image != 'default_course.jpg' %}
+                        <img src="{{ url_for('static', filename='images/courses/' + course.image) }}" alt="{{ course.title }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='images/default_course.jpg') }}" alt="{{ course.title }}">
+                    {% endif %}
+                    <div class="course-card-badge">
+                        {% if course.access_type == 'paid' %}
+                            <span class="badge-paid">Pullik</span>
+                        {% else %}
+                            <span class="badge-free">Bepul</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="course-card-content">
+                    <h3 class="course-card-title">{{ course.title }}</h3>
+                    <p class="course-card-description">{{ course.description[:100] if course.description else '' }}{% if course.description and course.description|length > 100 %}...{% endif %}</p>
+                    
+                    <div class="course-card-stats">
+                        <span><i class="fas fa-layer-group"></i> {{ course.modules_count }} modullar</span>
+                        <span><i class="fas fa-video"></i> {{ course.lessons_count }} video</span>
+                    </div>
+                    
+                    <div class="course-card-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ course.progress }}%"></div>
+                        </div>
+                        <span class="progress-text">{{ course.progress }}%</span>
+                    </div>
+                    
+                    <a href="{{ url_for('user.course_detail', course_id=course.id) }}" class="btn-primary btn-block">
+                        Kursga kirish <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📚</div>
+            <h2>Sizga hali kurslar biriktirilmagan</h2>
+            <p>Iltimos, administrator bilan bog'lanib, kurslarga kirish huquqini so'rang</p>
+            {% if session.get('role') == 'user' %}
+                <a href="{{ url_for('user.profile') }}" class="btn-secondary">Profilga o'tish</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

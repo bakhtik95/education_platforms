@@ -1,0 +1,1526 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block page_title %}{{ lesson.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-container {
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .video-container video {
+        width: 100%;
+        display: block;
+    }
+
+    .video-container video::-webkit-media-controls-timeline,
+    .video-container video::-webkit-media-controls-volume-slider,
+    .video-container video::-webkit-media-controls-seek-back-button,
+    .video-container video::-webkit-media-controls-seek-forward-button,
+    .video-container video::-webkit-media-controls-fullscreen-button,
+    .video-container video::-webkit-media-controls-current-time-display,
+    .video-container video::-webkit-media-controls-time-remaining-display,
+    .video-container video::-webkit-media-controls-volume-control,
+    .video-container video::-webkit-media-controls-playback-rate-button,
+    .video-container video::-webkit-media-controls-picture-in-picture-button,
+    .video-container video::-webkit-media-controls-download-button {
+        display: none !important;
+    }
+
+    .video-container video::-webkit-media-controls-play-button {
+        display: flex !important;
+    }
+
+    .video-container video {
+        pointer-events: none;
+    }
+
+    .video-container video::-webkit-media-controls-play-button {
+        pointer-events: auto !important;
+    }
+
+    .video-container video::-moz-range-track,
+    .video-container video::-moz-range-thumb {
+        display: none !important;
+    }
+
+    /* ===== Блок материалов ===== */
+    .lesson-files {
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .lesson-files h3 {
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+    .files-list {
+        list-style: none;
+        padding: 0;
+    }
+    .files-list li {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        gap: 12px;
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+    .files-list li:hover {
+        border-color: var(--btn-primary);
+    }
+    .files-list .file-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .files-list .file-icon {
+        font-size: 32px;
+        width: 40px;
+        text-align: center;
+    }
+    .files-list .file-name {
+        flex: 1;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .files-list .file-size {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    .files-list .file-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .files-list .file-actions .btn-small {
+        font-size: 12px;
+    }
+
+    /* ===== PDF Viewer ===== */
+    .pdf-viewer-container {
+        margin-top: 12px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        display: none;
+        width: 100%;
+        min-height: 500px;
+        flex-direction: column;
+    }
+    .pdf-viewer-container.active {
+        display: flex;
+    }
+
+    .pdf-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .pdf-toolbar .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .pdf-toolbar .toolbar-separator {
+        width: 1px;
+        height: 24px;
+        background: var(--border-color);
+        margin: 0 4px;
+    }
+    .pdf-toolbar .toolbar-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .pdf-toolbar .toolbar-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+    .pdf-toolbar .toolbar-btn.active {
+        background: var(--btn-primary);
+        color: #fff;
+    }
+    .pdf-toolbar .toolbar-input {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-primary);
+        padding: 4px 8px;
+        width: 50px;
+        text-align: center;
+        font-size: 14px;
+    }
+    .pdf-toolbar .toolbar-input:focus {
+        outline: none;
+        border-color: var(--btn-primary);
+    }
+    .pdf-toolbar .toolbar-text {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    .pdf-toolbar .toolbar-select {
+        background: var(--bg-input);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        color: var(--text-primary);
+        padding: 4px 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .pdf-toolbar .toolbar-select:focus {
+        outline: none;
+        border-color: var(--btn-primary);
+    }
+
+    .pdf-viewer {
+        flex: 1;
+        min-height: 500px;
+        background: #525659;
+        overflow: auto;
+        padding: 20px;
+        position: relative;
+    }
+    .pdf-viewer .pdf-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        margin: 0 auto;
+    }
+    .pdf-viewer .pdf-page {
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        display: block;
+        width: 100%;
+        max-width: 800px;
+    }
+    .pdf-viewer .pdf-page canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    .pdf-thumbnails {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 200px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        background: var(--bg-secondary);
+        border-right: 1px solid var(--border-color);
+        padding: 12px;
+        z-index: 999;
+        display: none;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+    }
+    .pdf-thumbnails.active {
+        display: block;
+    }
+    .pdf-thumbnails .thumbnail-item {
+        cursor: pointer;
+        padding: 4px;
+        margin-bottom: 6px;
+        border-radius: 4px;
+        transition: var(--transition);
+        border: 2px solid transparent;
+    }
+    .pdf-thumbnails .thumbnail-item:hover {
+        background: var(--bg-hover);
+    }
+    .pdf-thumbnails .thumbnail-item.active {
+        border-color: var(--btn-primary);
+    }
+    .pdf-thumbnails .thumbnail-item canvas {
+        width: 100%;
+        height: auto;
+        border-radius: 2px;
+    }
+    .pdf-thumbnails .thumbnail-item .page-number {
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 4px;
+    }
+
+    .pdf-search-container {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        background: var(--bg-input);
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+    .pdf-search-container.active {
+        display: flex;
+    }
+    .pdf-search-container input {
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        padding: 4px 8px;
+        outline: none;
+        min-width: 150px;
+        font-size: 14px;
+    }
+    .pdf-search-container input::placeholder {
+        color: var(--text-muted);
+    }
+    .pdf-search-container .search-results {
+        color: var(--text-secondary);
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .lesson-complete-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: var(--bg-secondary);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .lesson-complete-section .complete-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+    }
+    .lesson-complete-section .complete-checkbox input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        accent-color: var(--btn-primary);
+        cursor: pointer;
+    }
+    .lesson-complete-section .complete-checkbox label {
+        color: var(--text-primary);
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .lesson-complete-section .complete-checkbox label.completed {
+        color: var(--success);
+        text-decoration: line-through;
+    }
+    .lesson-complete-section .complete-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    .lesson-complete-section .complete-status .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    .lesson-complete-section .complete-status .status-badge.completed {
+        background: rgba(76, 175, 80, 0.15);
+        color: #4CAF50;
+    }
+    .lesson-complete-section .complete-status .status-badge.not-completed {
+        background: rgba(255, 152, 0, 0.15);
+        color: #FF9800;
+    }
+
+    .lesson-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+    .lesson-nav-center {
+        display: flex;
+        gap: 10px;
+    }
+
+    .video-container video {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    .custom-player {
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .custom-player video {
+        width: 100%;
+        display: block;
+        pointer-events: none;
+    }
+    .custom-player .player-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    .custom-player:hover .player-overlay {
+        opacity: 1;
+    }
+    .custom-player .play-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: #fff;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
+        flex-shrink: 0;
+        pointer-events: auto;
+    }
+    .custom-player .play-btn:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    .custom-player .player-time {
+        color: #fff;
+        font-size: 14px;
+        font-family: monospace;
+        pointer-events: none;
+    }
+    .custom-player .player-progress {
+        flex: 1;
+        height: 4px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
+        cursor: default;
+        position: relative;
+        pointer-events: none;
+    }
+    .custom-player .player-progress .progress-fill {
+        height: 100%;
+        background: #1769FF;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+
+    .lesson-completed-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: #4CAF50;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 10;
+        animation: fadeIn 0.5s ease;
+        pointer-events: none;
+    }
+
+    .course-access-info {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-sm);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+    }
+    .course-access-info .access-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .course-access-info .access-item:last-child {
+        border-bottom: none;
+    }
+    .course-access-info .access-label {
+        color: var(--text-secondary);
+    }
+    .course-access-info .access-value {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    .course-access-info .access-value.expired {
+        color: var(--danger);
+    }
+    .course-access-info .access-value.active {
+        color: var(--success);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .pdf-toolbar {
+            gap: 4px;
+            padding: 8px 12px;
+        }
+        .pdf-toolbar .toolbar-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        .pdf-toolbar .toolbar-text {
+            font-size: 12px;
+        }
+        .pdf-toolbar .toolbar-input {
+            width: 40px;
+            font-size: 12px;
+        }
+        .pdf-thumbnails {
+            width: 150px;
+            left: -160px;
+        }
+        .pdf-thumbnails.active {
+            left: 0;
+        }
+        .pdf-viewer {
+            padding: 10px;
+            min-height: 300px;
+        }
+        .pdf-viewer .pdf-page {
+            max-width: 100%;
+        }
+        .pdf-search-container input {
+            min-width: 80px;
+            font-size: 12px;
+        }
+        .files-list .file-header {
+            flex-wrap: wrap;
+        }
+        .files-list .file-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pdf-toolbar .toolbar-group {
+            gap: 2px;
+        }
+        .pdf-toolbar .toolbar-btn {
+            padding: 4px 6px;
+            font-size: 11px;
+        }
+        .pdf-toolbar .toolbar-text {
+            font-size: 11px;
+        }
+        .pdf-toolbar .toolbar-input {
+            width: 32px;
+            font-size: 11px;
+        }
+        .pdf-viewer .pdf-page {
+            max-width: 100%;
+        }
+        .pdf-thumbnails {
+            width: 120px;
+            left: -130px;
+        }
+        .pdf-thumbnails.active {
+            left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lesson-container">
+    <div class="course-access-info">
+        <div class="access-item">
+            <span class="access-label">📚 Kurs:</span>
+            <span class="access-value">{{ course.title }}</span>
+        </div>
+        <div class="access-item">
+            <span class="access-label">📅 Boshlanish sanasi:</span>
+            <span class="access-value">{{ course.access_start or 'Cheksiz' }}</span>
+        </div>
+        <div class="access-item">
+            <span class="access-label">📅 Tugash sanasi:</span>
+            <span class="access-value {% if course.access_end and course.access_end < today %}expired{% else %}active{% endif %}">
+                {{ course.access_end or 'Cheksiz' }}
+                {% if course.access_end and course.access_end < today %}
+                    (Muddati o'tgan)
+                {% endif %}
+            </span>
+        </div>
+        <div class="access-item">
+            <span class="access-label">🔑 Kirish turi:</span>
+            <span class="access-value">
+                {% if course.access_type == 'paid' %}
+                    <span class="badge-paid">Pullik</span>
+                {% else %}
+                    <span class="badge-free">Bepul</span>
+                {% endif %}
+            </span>
+        </div>
+        <div class="access-item">
+            <span class="access-label">📊 Holat:</span>
+            <span class="access-value">
+                {% if course.access_end and course.access_end < today %}
+                    <span class="badge-expired">Muddati o'tgan</span>
+                {% else %}
+                    <span class="badge-active">Faol</span>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="lesson-content">
+        {% if lesson.type == 'video' and lesson.video %}
+            <div class="custom-player" id="customPlayer">
+                <video id="lesson-video"
+                       preload="metadata"
+                       oncontextmenu="return false;"
+                       disablePictureInPicture
+                       playsinline
+                       controlsList="nodownload noremoteplayback noplaybackrate">
+                    <source src="{{ url_for('media.stream_video', filename=lesson.video.filename) }}" type="video/mp4">
+                    <p>Brauzeringiz video player-ni qo'llab-quvvatlamaydi</p>
+                </video>
+                <div class="player-overlay">
+                    <button class="play-btn" id="playBtn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <span class="player-time" id="playerTime">00:00 / 00:00</span>
+                    <div class="player-progress" id="playerProgress">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="lesson-description">
+            {% if lesson.description %}
+                <p>{{ lesson.description }}</p>
+            {% endif %}
+        </div>
+
+        {% if lesson.files %}
+        <div class="lesson-files">
+            <h3><i class="fas fa-paperclip"></i> Materiallar</h3>
+            <ul class="files-list">
+                {% for file in lesson.files %}
+                <li>
+                    <div class="file-header">
+                        <span class="file-icon">
+                            {% if '.pdf' in file.original_name|lower %}
+                                📄
+                            {% elif '.doc' in file.original_name|lower or '.docx' in file.original_name|lower %}
+                                📝
+                            {% elif '.ppt' in file.original_name|lower or '.pptx' in file.original_name|lower %}
+                                📊
+                            {% elif '.xls' in file.original_name|lower or '.xlsx' in file.original_name|lower %}
+                                📈
+                            {% elif '.jpg' in file.original_name|lower or '.jpeg' in file.original_name|lower or '.png' in file.original_name|lower or '.gif' in file.original_name|lower %}
+                                🖼️
+                            {% elif '.mp4' in file.original_name|lower or '.webm' in file.original_name|lower or '.mov' in file.original_name|lower %}
+                                🎬
+                            {% else %}
+                                📎
+                            {% endif %}
+                        </span>
+                        <span class="file-name">{{ file.original_name }}</span>
+                        <span class="file-size">{{ file.size|filesize }}</span>
+                    </div>
+                    <div class="file-actions">
+                        <button onclick="openFileViewer('{{ file.id }}', '{{ file.original_name }}', '{{ file.size }}')" class="btn-small btn-info">
+                            <i class="fas fa-eye"></i> Ko'rish
+                        </button>
+                        <a href="{{ url_for('media.download_file', file_id=file.id) }}" class="btn-small" download>
+                            <i class="fas fa-download"></i> Yuklab olish
+                        </a>
+                    </div>
+
+                    <div class="pdf-viewer-container" id="pdfViewer_{{ file.id }}">
+                        <div class="pdf-toolbar" id="pdfToolbar_{{ file.id }}">
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="toggleThumbnails('{{ file.id }}')" title="Miniatyuralar">
+                                    <i class="fas fa-th-list"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="prevPage('{{ file.id }}')" title="Oldingi sahifa">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <input type="text" class="toolbar-input" id="pdfPageInput_{{ file.id }}" value="1" onchange="goToPage('{{ file.id }}', this.value)">
+                                <span class="toolbar-text" id="pdfPageCount_{{ file.id }}">/ 0</span>
+                                <button class="toolbar-btn" onclick="nextPage('{{ file.id }}')" title="Keyingi sahifa">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="zoomOut('{{ file.id }}')" title="Kichraytirish">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <span class="toolbar-text" id="pdfZoomText_{{ file.id }}">100%</span>
+                                <button class="toolbar-btn" onclick="zoomIn('{{ file.id }}')" title="Kattalashtirish">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <select class="toolbar-select" id="pdfScaleSelect_{{ file.id }}" onchange="setScale('{{ file.id }}', this.value)">
+                                    <option value="auto">Avto</option>
+                                    <option value="page-fit">Sahifa bo'yicha</option>
+                                    <option value="page-width">Kenglik bo'yicha</option>
+                                    <option value="50">50%</option>
+                                    <option value="75">75%</option>
+                                    <option value="100" selected>100%</option>
+                                    <option value="125">125%</option>
+                                    <option value="150">150%</option>
+                                    <option value="200">200%</option>
+                                </select>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="toggleSearch('{{ file.id }}')" title="Qidirish">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <div class="pdf-search-container" id="pdfSearch_{{ file.id }}">
+                                    <input type="text" id="pdfSearchInput_{{ file.id }}" placeholder="Qidirish..." onkeydown="if(event.key==='Enter') searchInPDF('{{ file.id }}')">
+                                    <span class="search-results" id="pdfSearchResults_{{ file.id }}"></span>
+                                    <button class="toolbar-btn" onclick="searchPrev('{{ file.id }}')" title="Oldingi">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <button class="toolbar-btn" onclick="searchNext('{{ file.id }}')" title="Keyingi">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <button class="toolbar-btn" onclick="toggleSearch('{{ file.id }}')" title="Yopish">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="printPDF('{{ file.id }}')" title="Chop etish">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                                <a href="{{ url_for('media.download_file', file_id=file.id) }}" class="toolbar-btn" title="Yuklab olish" download>
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <button class="toolbar-btn" onclick="fullscreenPDF('{{ file.id }}')" title="To'liq ekran">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-separator"></div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn" onclick="closePDFViewer('{{ file.id }}')" title="Yopish">
+                                    <i class="fas fa-times"></i> Yopish
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pdf-viewer" id="pdfViewerArea_{{ file.id }}">
+                            <div class="pdf-container" id="pdfContainer_{{ file.id }}"></div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="lesson-complete-section">
+            <div class="complete-checkbox" onclick="toggleComplete()">
+                <input type="checkbox" id="lessonComplete" {% if progress.completed %}checked{% endif %}>
+                <label for="lessonComplete" id="completeLabel" class="{% if progress.completed %}completed{% endif %}">
+                    {% if progress.completed %}
+                        ✅ Dars yakunlandi
+                    {% else %}
+                        ☐ Darsni yakunlash
+                    {% endif %}
+                </label>
+            </div>
+            <div class="complete-status">
+                <span>Holat:</span>
+                <span class="status-badge {% if progress.completed %}completed{% else %}not-completed{% endif %}" id="statusBadge">
+                    {% if progress.completed %}
+                        ✅ Tugallangan
+                    {% else %}
+                        ⏳ Tugallanmagan
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="lesson-navigation">
+        <div>
+            {% if navigation.prev %}
+                <a href="{{ url_for('user.lesson_detail', lesson_id=navigation.prev.id) }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Oldingi dars
+                </a>
+            {% endif %}
+        </div>
+        <div class="lesson-nav-center">
+            <a href="{{ url_for('user.course_detail', course_id=course.id) }}" class="btn-secondary">
+                <i class="fas fa-th-list"></i> Kursga qaytish
+            </a>
+        </div>
+        <div>
+            {% if navigation.next %}
+                <a href="{{ url_for('user.lesson_detail', lesson_id=navigation.next.id) }}" class="btn-primary">
+                    Keyingi dars <i class="fas fa-arrow-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ===== Глобальные переменные =====
+const pdfViewers = {};
+
+// ===== Функции для работы с PDF =====
+
+function openFileViewer(fileId, fileName, fileSize) {
+    const container = document.getElementById('pdfViewer_' + fileId);
+    const thumbnails = document.getElementById('pdfThumbnails_' + fileId);
+
+    document.querySelectorAll('.pdf-viewer-container').forEach(el => {
+        if (el.id !== 'pdfViewer_' + fileId) {
+            el.classList.remove('active');
+        }
+    });
+
+    document.querySelectorAll('.pdf-thumbnails').forEach(el => {
+        if (el.id !== 'pdfThumbnails_' + fileId) {
+            el.classList.remove('active');
+        }
+    });
+
+    if (container.classList.contains('active')) {
+        container.classList.remove('active');
+        if (thumbnails) thumbnails.classList.remove('active');
+        return;
+    }
+
+    container.classList.add('active');
+
+    if (pdfViewers[fileId] && pdfViewers[fileId].loaded) {
+        return;
+    }
+
+    loadPDF(fileId);
+}
+
+function loadPDF(fileId) {
+    const container = document.getElementById('pdfContainer_' + fileId);
+    const pageInput = document.getElementById('pdfPageInput_' + fileId);
+    const pageCount = document.getElementById('pdfPageCount_' + fileId);
+
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="font-size:32px;"></i><p>Yuklanmoqda...</p></div>';
+
+    const url = '/media/file/' + fileId;
+
+    pdfjsLib.getDocument(url).promise.then(function(pdf) {
+        pdfViewers[fileId] = {
+            pdf: pdf,
+            currentPage: 1,
+            scale: 1,
+            loaded: true,
+            totalPages: pdf.numPages,
+            searchResults: [],
+            searchIndex: -1,
+            thumbnailsLoaded: false
+        };
+
+        pageCount.textContent = '/ ' + pdf.numPages;
+        pageInput.max = pdf.numPages;
+        pageInput.value = 1;
+
+        renderPage(fileId, 1);
+        loadThumbnails(fileId);
+        updateZoomText(fileId);
+
+    }).catch(function(error) {
+        console.error('PDF yuklashda xatolik:', error);
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger);"><i class="fas fa-exclamation-triangle" style="font-size:32px;"></i><p>PDF ni yuklashda xatolik yuz berdi</p><p style="font-size:14px;color:var(--text-muted);">' + error.message + '</p></div>';
+    });
+}
+
+function renderPage(fileId, pageNumber) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    const pdf = viewerData.pdf;
+    const container = document.getElementById('pdfContainer_' + fileId);
+    const scale = viewerData.scale || 1;
+
+    if (pageNumber < 1) pageNumber = 1;
+    if (pageNumber > pdf.numPages) pageNumber = pdf.numPages;
+
+    viewerData.currentPage = pageNumber;
+    document.getElementById('pdfPageInput_' + fileId).value = pageNumber;
+
+    container.innerHTML = '';
+
+    pdf.getPage(pageNumber).then(function(page) {
+        const viewport = page.getViewport({ scale: scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+
+        const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+        };
+
+        page.render(renderContext).promise.then(function() {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'pdf-page';
+            pageDiv.appendChild(canvas);
+            container.appendChild(pageDiv);
+
+            updateThumbnailActive(fileId);
+        });
+    });
+}
+
+function loadThumbnails(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData || viewerData.thumbnailsLoaded) return;
+
+    const pdf = viewerData.pdf;
+    const container = document.getElementById('pdfThumbnails_' + fileId);
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const thumbDiv = document.createElement('div');
+        thumbDiv.className = 'thumbnail-item';
+        thumbDiv.id = 'thumb_' + fileId + '_' + i;
+        thumbDiv.onclick = function() { goToPage(fileId, i); };
+
+        const canvas = document.createElement('canvas');
+        const thumbPageDiv = document.createElement('div');
+        thumbPageDiv.className = 'page-number';
+        thumbPageDiv.textContent = i;
+
+        thumbDiv.appendChild(canvas);
+        thumbDiv.appendChild(thumbPageDiv);
+        container.appendChild(thumbDiv);
+
+        pdf.getPage(i).then(function(page) {
+            const viewport = page.getViewport({ scale: 0.3 });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const context = canvas.getContext('2d');
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+            page.render(renderContext);
+        });
+    }
+
+    viewerData.thumbnailsLoaded = true;
+}
+
+function updateThumbnailActive(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    document.querySelectorAll('#pdfThumbnails_' + fileId + ' .thumbnail-item').forEach(el => {
+        el.classList.remove('active');
+    });
+
+    const activeThumb = document.getElementById('thumb_' + fileId + '_' + viewerData.currentPage);
+    if (activeThumb) {
+        activeThumb.classList.add('active');
+        activeThumb.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+function toggleThumbnails(fileId) {
+    const container = document.getElementById('pdfThumbnails_' + fileId);
+    if (!container) {
+        createThumbnailsContainer(fileId);
+    } else {
+        container.classList.toggle('active');
+    }
+}
+
+function createThumbnailsContainer(fileId) {
+    const container = document.createElement('div');
+    container.className = 'pdf-thumbnails';
+    container.id = 'pdfThumbnails_' + fileId;
+    document.body.appendChild(container);
+
+    loadThumbnails(fileId);
+
+    setTimeout(() => {
+        container.classList.add('active');
+    }, 100);
+}
+
+function prevPage(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    const newPage = viewerData.currentPage - 1;
+    if (newPage >= 1) {
+        renderPage(fileId, newPage);
+    }
+}
+
+function nextPage(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    const newPage = viewerData.currentPage + 1;
+    if (newPage <= viewerData.totalPages) {
+        renderPage(fileId, newPage);
+    }
+}
+
+function goToPage(fileId, page) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    let pageNum = parseInt(page);
+    if (isNaN(pageNum)) pageNum = 1;
+    if (pageNum < 1) pageNum = 1;
+    if (pageNum > viewerData.totalPages) pageNum = viewerData.totalPages;
+
+    renderPage(fileId, pageNum);
+}
+
+function zoomIn(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    viewerData.scale = (viewerData.scale || 1) * 1.1;
+    if (viewerData.scale > 5) viewerData.scale = 5;
+
+    updateZoomText(fileId);
+    renderPage(fileId, viewerData.currentPage);
+}
+
+function zoomOut(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    viewerData.scale = (viewerData.scale || 1) / 1.1;
+    if (viewerData.scale < 0.1) viewerData.scale = 0.1;
+
+    updateZoomText(fileId);
+    renderPage(fileId, viewerData.currentPage);
+}
+
+function setScale(fileId, value) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    if (value === 'auto') {
+        const viewer = document.getElementById('pdfViewerArea_' + fileId);
+        const containerWidth = viewer.clientWidth - 40;
+        viewerData.pdf.getPage(viewerData.currentPage).then(function(page) {
+            const viewport = page.getViewport({ scale: 1 });
+            viewerData.scale = containerWidth / viewport.width;
+            if (viewerData.scale > 2) viewerData.scale = 2;
+            if (viewerData.scale < 0.5) viewerData.scale = 0.5;
+            updateZoomText(fileId);
+            renderPage(fileId, viewerData.currentPage);
+        });
+        return;
+    }
+
+    if (value === 'page-fit') {
+        const viewer = document.getElementById('pdfViewerArea_' + fileId);
+        const containerHeight = viewer.clientHeight - 40;
+        viewerData.pdf.getPage(viewerData.currentPage).then(function(page) {
+            const viewport = page.getViewport({ scale: 1 });
+            const scaleX = (viewer.clientWidth - 40) / viewport.width;
+            const scaleY = containerHeight / viewport.height;
+            viewerData.scale = Math.min(scaleX, scaleY);
+            if (viewerData.scale > 2) viewerData.scale = 2;
+            if (viewerData.scale < 0.5) viewerData.scale = 0.5;
+            updateZoomText(fileId);
+            renderPage(fileId, viewerData.currentPage);
+        });
+        return;
+    }
+
+    if (value === 'page-width') {
+        const viewer = document.getElementById('pdfViewerArea_' + fileId);
+        const containerWidth = viewer.clientWidth - 40;
+        viewerData.pdf.getPage(viewerData.currentPage).then(function(page) {
+            const viewport = page.getViewport({ scale: 1 });
+            viewerData.scale = containerWidth / viewport.width;
+            if (viewerData.scale > 2) viewerData.scale = 2;
+            if (viewerData.scale < 0.5) viewerData.scale = 0.5;
+            updateZoomText(fileId);
+            renderPage(fileId, viewerData.currentPage);
+        });
+        return;
+    }
+
+    const scaleValue = parseFloat(value) / 100;
+    if (!isNaN(scaleValue) && scaleValue > 0) {
+        viewerData.scale = scaleValue;
+        updateZoomText(fileId);
+        renderPage(fileId, viewerData.currentPage);
+    }
+}
+
+function updateZoomText(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    const zoomText = document.getElementById('pdfZoomText_' + fileId);
+    if (zoomText) {
+        const percent = Math.round(viewerData.scale * 100);
+        zoomText.textContent = percent + '%';
+    }
+
+    const select = document.getElementById('pdfScaleSelect_' + fileId);
+    if (select) {
+        const percent = Math.round(viewerData.scale * 100);
+        let found = false;
+        for (let option of select.options) {
+            if (option.value === String(percent) || option.value === 'auto' || option.value === 'page-fit' || option.value === 'page-width') {
+                if (option.value === String(percent)) {
+                    select.value = option.value;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            select.value = 'auto';
+        }
+    }
+}
+
+function toggleSearch(fileId) {
+    const container = document.getElementById('pdfSearch_' + fileId);
+    container.classList.toggle('active');
+    if (container.classList.contains('active')) {
+        document.getElementById('pdfSearchInput_' + fileId).focus();
+    } else {
+        document.getElementById('pdfSearchInput_' + fileId).value = '';
+        document.getElementById('pdfSearchResults_' + fileId).textContent = '';
+        if (pdfViewers[fileId]) {
+            pdfViewers[fileId].searchResults = [];
+            pdfViewers[fileId].searchIndex = -1;
+        }
+    }
+}
+
+function searchInPDF(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData) return;
+
+    const query = document.getElementById('pdfSearchInput_' + fileId).value.trim();
+    if (!query) return;
+
+    const pdf = viewerData.pdf;
+    const searchResults = [];
+
+    let promises = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+        promises.push(pdf.getPage(i).then(function(page) {
+            return page.getTextContent().then(function(textContent) {
+                const text = textContent.items.map(item => item.str).join(' ');
+                if (text.toLowerCase().includes(query.toLowerCase())) {
+                    searchResults.push({
+                        page: i,
+                        text: text
+                    });
+                }
+            });
+        }));
+    }
+
+    Promise.all(promises).then(function() {
+        viewerData.searchResults = searchResults;
+        viewerData.searchIndex = -1;
+
+        const resultsSpan = document.getElementById('pdfSearchResults_' + fileId);
+        if (searchResults.length > 0) {
+            resultsSpan.textContent = searchResults.length + ' topilgan';
+            searchNext(fileId);
+        } else {
+            resultsSpan.textContent = 'Hech narsa topilmadi';
+        }
+    });
+}
+
+function searchNext(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData || viewerData.searchResults.length === 0) return;
+
+    viewerData.searchIndex = (viewerData.searchIndex + 1) % viewerData.searchResults.length;
+    const result = viewerData.searchResults[viewerData.searchIndex];
+    goToPage(fileId, result.page);
+
+    const resultsSpan = document.getElementById('pdfSearchResults_' + fileId);
+    resultsSpan.textContent = (viewerData.searchIndex + 1) + '/' + viewerData.searchResults.length;
+}
+
+function searchPrev(fileId) {
+    const viewerData = pdfViewers[fileId];
+    if (!viewerData || viewerData.searchResults.length === 0) return;
+
+    viewerData.searchIndex = (viewerData.searchIndex - 1 + viewerData.searchResults.length) % viewerData.searchResults.length;
+    const result = viewerData.searchResults[viewerData.searchIndex];
+    goToPage(fileId, result.page);
+
+    const resultsSpan = document.getElementById('pdfSearchResults_' + fileId);
+    resultsSpan.textContent = (viewerData.searchIndex + 1) + '/' + viewerData.searchResults.length;
+}
+
+function printPDF(fileId) {
+    window.open('/media/file/' + fileId + '?print=true', '_blank');
+}
+
+function fullscreenPDF(fileId) {
+    const container = document.getElementById('pdfViewer_' + fileId);
+    if (container.requestFullscreen) {
+        container.requestFullscreen();
+    } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+    } else if (container.msRequestFullscreen) {
+        container.msRequestFullscreen();
+    }
+}
+
+function closePDFViewer(fileId) {
+    const container = document.getElementById('pdfViewer_' + fileId);
+    container.classList.remove('active');
+
+    const thumbnails = document.getElementById('pdfThumbnails_' + fileId);
+    if (thumbnails) {
+        thumbnails.classList.remove('active');
+    }
+}
+
+// ===== Функции для завершения урока =====
+
+function updateCompleteStatus(completed) {
+    const checkbox = document.getElementById('lessonComplete');
+    const label = document.getElementById('completeLabel');
+    const badge = document.getElementById('statusBadge');
+
+    checkbox.checked = completed;
+    if (completed) {
+        label.className = 'completed';
+        label.innerHTML = '✅ Dars yakunlandi';
+        badge.className = 'status-badge completed';
+        badge.innerHTML = '✅ Tugallangan';
+    } else {
+        label.className = '';
+        label.innerHTML = '☐ Darsni yakunlash';
+        badge.className = 'status-badge not-completed';
+        badge.innerHTML = '⏳ Tugallanmagan';
+    }
+}
+
+function toggleComplete() {
+    const checkbox = document.getElementById('lessonComplete');
+    const isCompleted = !checkbox.checked;
+
+    updateCompleteStatus(isCompleted);
+
+    const data = {
+        position: {{ progress.video_position|default(0) }},
+        completed: isCompleted
+    };
+
+    fetch(`/lesson/{{ lesson.id }}/progress`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.completed) {
+            showToast('✅ Dars muvaffaqiyatli yakunlandi!');
+        }
+    })
+    .catch(error => console.error('Progress save error:', error));
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #4CAF50;
+        color: #fff;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 500;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        animation: slideUp 0.5s ease;
+        max-width: 400px;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.style.transition = 'all 0.5s ease';
+        setTimeout(() => {
+            toast.remove();
+        }, 500);
+    }, 3000);
+}
+
+// ===== Видео плеер =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('lesson-video');
+    const playBtn = document.getElementById('playBtn');
+    const playerTime = document.getElementById('playerTime');
+    const progressFill = document.getElementById('progressFill');
+    const playerProgress = document.getElementById('playerProgress');
+
+    if (video) {
+        let isPlaying = false;
+        let saveInterval = 5000;
+        let lastSavedPosition = {{ progress.video_position|default(0) }};
+        let isSaving = false;
+
+        video.controls = false;
+        video.controlsList = 'nodownload noremoteplayback noplaybackrate';
+        video.disablePictureInPicture = true;
+
+        if (lastSavedPosition > 0) {
+            video.currentTime = lastSavedPosition;
+        }
+
+        video.addEventListener('timeupdate', function() {
+            const current = formatTime(this.currentTime);
+            const duration = formatTime(this.duration);
+            playerTime.textContent = `${current} / ${duration}`;
+
+            const percent = this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
+            progressFill.style.width = `${Math.min(100, percent)}%`;
+        });
+
+        playBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (video.paused) {
+                video.play();
+                this.innerHTML = '<i class="fas fa-pause"></i>';
+                isPlaying = true;
+            } else {
+                video.pause();
+                this.innerHTML = '<i class="fas fa-play"></i>';
+                isPlaying = false;
+                saveProgress();
+            }
+        });
+
+        setInterval(function() {
+            if (!video.paused) {
+                saveProgress();
+            }
+        }, saveInterval);
+
+        video.addEventListener('ended', function() {
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            isPlaying = false;
+            saveProgress(true);
+            showCompleted();
+            updateCompleteStatus(true);
+        });
+
+        window.addEventListener('beforeunload', function() {
+            saveProgress(true);
+        });
+
+        video.addEventListener('keydown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('mouseup', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        video.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!e.target.closest('.play-btn')) {
+                playBtn.click();
+            }
+            return false;
+        });
+
+        playerProgress.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        playerProgress.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '00:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function saveProgress(completed = false) {
+            if (isSaving) return;
+
+            const currentTime = Math.floor(video.currentTime);
+            const duration = Math.floor(video.duration);
+            const isCompleted = completed || (video.currentTime >= duration - 1 && duration > 0);
+
+            if (currentTime === lastSavedPosition && !isCompleted) return;
+
+            isSaving = true;
+            lastSavedPosition = currentTime;
+
+            const data = {
+                position: currentTime,
+                completed: isCompleted
+            };
+
+            fetch(`/lesson/{{ lesson.id }}/progress`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.completed) {
+                    showCompleted();
+                    updateCompleteStatus(true);
+                }
+            })
+            .catch(error => console.error('Progress save error:', error))
+            .finally(() => {
+                isSaving = false;
+            });
+        }
+
+        function showCompleted() {
+            const container = document.querySelector('.custom-player');
+            let badge = container.querySelector('.lesson-completed-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'lesson-completed-badge';
+                container.style.position = 'relative';
+                container.appendChild(badge);
+            }
+            badge.innerHTML = '✅ Dars yakunlandi';
+        }
+    }
+});
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
+
+document.addEventListener('keydown', function(e) {
+    const video = document.getElementById('lesson-video');
+    if (video) {
+        const blockedKeys = [' ', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'f', 'F'];
+        if (blockedKeys.includes(e.key) || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+}, true);
+</script>
+{% endblock %}
