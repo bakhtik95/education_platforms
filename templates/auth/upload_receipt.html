@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Kvitansiyani yuklash{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card auth-card-upload">
+        <div class="auth-header">
+            <h1 class="auth-title">📎 Kvitansiyani yuklash</h1>
+            <p class="auth-subtitle">To'lov kvitansiyasini yuklang</p>
+        </div>
+        
+        <div class="upload-info">
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">F.I.Sh.:</span>
+                    <span class="info-value">{{ user.full_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Login:</span>
+                    <span class="info-value">{{ user.login }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">To'lov miqdori:</span>
+                    <span class="info-value highlight">{{ user.payment_amount }} so'm</span>
+                </div>
+            </div>
+
+            <div class="upload-instructions">
+                <div class="instructions-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Qo'llanma</span>
+                </div>
+                <ol>
+                    <li>To'lovni amalga oshiring</li>
+                    <li>Kvitansiyani suratga oling yoki skanerlang</li>
+                    <li>Quyidagi forma orqali yuklang</li>
+                </ol>
+                <div class="allowed-formats">
+                    <span>✅ Ruxsat etilgan formatlar:</span>
+                    <span class="format-tag">JPG</span>
+                    <span class="format-tag">PNG</span>
+                    <span class="format-tag">PDF</span>
+                    <span class="format-tag">GIF</span>
+                    <span class="format-tag">SVG</span>
+                </div>
+                <div class="max-size">
+                    <span>📏 Maksimal hajm: 10 MB</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.upload_receipt', user_id=user.id) }}"
+              enctype="multipart/form-data" class="upload-form">
+            <div class="form-group">
+                <label for="receipt">Kvitansiya fayli <span class="required">*</span></label>
+                <div class="file-upload-wrapper" id="fileUploadWrapper">
+                    <input type="file" id="receipt" name="receipt"
+                           accept=".jpg,.jpeg,.png,.pdf,.gif,.svg" required>
+                    <div class="file-upload-placeholder" id="filePlaceholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Faylni tanlang yoki bu yerga tashlang</p>
+                        <span class="file-upload-hint">JPG, PNG, PDF, GIF, SVG (maks. 10 MB)</span>
+                    </div>
+                    <div class="file-upload-preview" id="filePreview" style="display: none;">
+                        <i class="fas fa-file"></i>
+                        <span id="fileName">file.jpg</span>
+                        <button type="button" class="remove-file" onclick="removeFile()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('auth.payment', user_id=user.id) }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Orqaga
+                </a>
+                <button type="submit" class="btn-primary" id="submitBtn">
+                    <i class="fas fa-upload"></i> Yuklash
+                </button>
+            </div>
+        </form>
+
+        <div class="upload-footer">
+            <div class="footer-note">
+                <i class="fas fa-shield-alt"></i>
+                <p>Kvitansiya tekshirilgandan so'ng sizga SMS orqali login va parol yuboriladi</p>
+            </div>
+            <a href="{{ url_for('auth.login') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kirish sahifasiga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('receipt');
+    const placeholder = document.getElementById('filePlaceholder');
+    const preview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            fileName.textContent = file.name;
+            placeholder.style.display = 'none';
+            preview.style.display = 'flex';
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Drag and drop
+    const wrapper = document.getElementById('fileUploadWrapper');
+    wrapper.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+
+    wrapper.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+
+    wrapper.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            const file = e.dataTransfer.files[0];
+            fileName.textContent = file.name;
+            placeholder.style.display = 'none';
+            preview.style.display = 'flex';
+            submitBtn.disabled = false;
+        }
+    });
+});
+
+function removeFile() {
+    const fileInput = document.getElementById('receipt');
+    const placeholder = document.getElementById('filePlaceholder');
+    const preview = document.getElementById('filePreview');
+    const submitBtn = document.getElementById('submitBtn');
+
+    fileInput.value = '';
+    placeholder.style.display = 'block';
+    preview.style.display = 'none';
+    submitBtn.disabled = true;
+}
+</script>
+
+<style>
+.auth-card-upload {
+    max-width: 600px;
+}
+
+.upload-info {
+    margin-bottom: 24px;
+}
+
+.info-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 16px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--text-secondary);
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.info-value.highlight {
+    color: var(--btn-primary);
+    font-weight: 700;
+}
+
+.upload-instructions {
+    background: rgba(23, 105, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+}
+
+.instructions-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.instructions-header i {
+    color: var(--btn-primary);
+}
+
+.upload-instructions ol {
+    padding-left: 20px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.upload-instructions ol li {
+    margin-bottom: 4px;
+}
+
+.allowed-formats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.allowed-formats span {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.format-tag {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.max-size {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.file-upload-wrapper {
+    position: relative;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.file-upload-wrapper.dragover {
+    border-color: var(--btn-primary);
+    background: var(--bg-hover);
+}
+
+.file-upload-wrapper input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-upload-placeholder {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.file-upload-placeholder i {
+    font-size: 48px;
+    color: var(--btn-primary);
+    margin-bottom: 12px;
+}
+
+.file-upload-placeholder p {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.file-upload-hint {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.file-upload-preview {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+}
+
+.file-upload-preview i {
+    font-size: 32px;
+    color: var(--btn-primary);
+}
+
+.file-upload-preview span {
+    flex: 1;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: var(--transition);
+}
+
+.remove-file:hover {
+    transform: scale(1.2);
+}
+
+.upload-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+}
+
+.footer-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.footer-note i {
+    color: var(--btn-primary);
+    font-size: 20px;
+}
+
+@media (max-width: 480px) {
+    .file-upload-placeholder {
+        padding: 20px;
+    }
+    .file-upload-placeholder i {
+        font-size: 32px;
+    }
+    .info-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .allowed-formats {
+        gap: 4px;
+    }
+}
+</style>
+{% endblock %}

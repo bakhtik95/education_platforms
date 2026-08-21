@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}To'lov{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card auth-card-payment">
+        <div class="auth-header">
+            <h1 class="auth-title">💳 To'lov</h1>
+            <p class="auth-subtitle">Hisobingizni faollashtirish uchun to'lovni amalga oshiring</p>
+        </div>
+
+        <div class="payment-info">
+            <div class="payment-amount">
+                <span class="amount-label">To'lov miqdori:</span>
+                <span class="amount-value">{{ user.payment_amount }} so'm</span>
+            </div>
+            <div class="payment-user">
+                <p><strong>F.I.Sh.:</strong> {{ user.full_name }}</p>
+                <p><strong>Login:</strong> {{ user.login }}</p>
+                <p><strong>Telefon:</strong> {{ user.phone or 'Ko\'rsatilmagan' }}</p>
+                <p><strong>Email:</strong> {{ user.email or 'Ko\'rsatilmagan' }}</p>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <h3>To'lov usullari</h3>
+
+            <div class="payment-method">
+                <div class="method-header">
+                    <i class="fas fa-university"></i>
+                    <span>Bank o'tkazmasi</span>
+                </div>
+                <div class="method-details">
+                    <p><strong>Bank:</strong> O'zbekiston Milliy Banki</p>
+                    <p><strong>MFO:</strong> 00001</p>
+                    <p><strong>INN:</strong> 123456789</p>
+                    <p><strong>Hisob raqam:</strong> 2020 8000 1000 0000 0001</p>
+                    <p><strong>To'lov maqsadi:</strong> O'quv kursi uchun to'lov</p>
+                    <p><strong>To'lovchi:</strong> {{ user.full_name }}</p>
+                </div>
+                <button onclick="window.location.href='{{ url_for('auth.upload_receipt', user_id=user.id) }}'" class="btn-primary">
+                    Kvitansiyani yuklash
+                </button>
+            </div>
+
+            <div class="payment-method">
+                <div class="method-header">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Payme</span>
+                </div>
+                <div class="method-details">
+                    <p>Payme orqali to'lov qilish uchun quyidagi ma'lumotlardan foydalaning:</p>
+                    <p><strong>Payme ID:</strong> 123456789</p>
+                    <p><strong>To'lov maqsadi:</strong> O'quv kursi uchun to'lov</p>
+                    <p><strong>Miqdori:</strong> {{ user.payment_amount }} so'm</p>
+                </div>
+                <button onclick="window.location.href='{{ url_for('auth.upload_receipt', user_id=user.id) }}'" class="btn-primary">
+                    Kvitansiyani yuklash
+                </button>
+            </div>
+
+            <div class="payment-method">
+                <div class="method-header">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Click</span>
+                </div>
+                <div class="method-details">
+                    <p>Click orqali to'lov qilish uchun quyidagi ma'lumotlardan foydalaning:</p>
+                    <p><strong>Click ID:</strong> 123456789</p>
+                    <p><strong>To'lov maqsadi:</strong> O'quv kursi uchun to'lov</p>
+                    <p><strong>Miqdori:</strong> {{ user.payment_amount }} so'm</p>
+                </div>
+                <button onclick="window.location.href='{{ url_for('auth.upload_receipt', user_id=user.id) }}'" class="btn-primary">
+                    Kvitansiyani yuklash
+                </button>
+            </div>
+        </div>
+
+        <div class="payment-footer">
+            <div class="payment-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-text">To'lovni amalga oshiring</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-text">Kvitansiyani yuklang</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-text">Admin tasdiqlashini kuting</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <span class="step-text">SMS orqali login va parol oling</span>
+                </div>
+            </div>
+
+            <div class="payment-note">
+                <p>⚠️ To'lovni amalga oshirgandan so'ng, kvitansiyani yuklang</p>
+                <p>Admin tomonidan tekshirilgandan so'ng sizga SMS orqali login va parol yuboriladi</p>
+                <p>⏳ Jarayon 24 soatgacha davom etishi mumkin</p>
+            </div>
+
+            <a href="{{ url_for('auth.login') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kirish sahifasiga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-card-payment {
+    max-width: 750px;
+}
+
+.payment-info {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.payment-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 12px;
+}
+
+.amount-label {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+.amount-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--btn-primary);
+}
+
+.payment-user p {
+    margin: 4px 0;
+    color: var(--text-secondary);
+}
+
+.payment-user strong {
+    color: var(--text-primary);
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.payment-methods h3 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.payment-method {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.payment-method:hover {
+    border-color: var(--btn-primary);
+    transform: translateX(4px);
+}
+
+.method-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.method-header i {
+    color: var(--btn-primary);
+    font-size: 24px;
+}
+
+.method-details {
+    margin-bottom: 16px;
+}
+
+.method-details p {
+    margin: 4px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.method-details strong {
+    color: var(--text-primary);
+}
+
+.payment-footer {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.payment-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.step-number {
+    background: var(--btn-primary);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.step-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.step-arrow {
+    color: var(--text-muted);
+    font-size: 20px;
+}
+
+.payment-note {
+    background: rgba(255, 152, 0, 0.05);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.payment-note p {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.payment-note p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .payment-steps {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .step-arrow {
+        transform: rotate(90deg);
+        text-align: center;
+    }
+    .step {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-amount {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    .method-header {
+        font-size: 16px;
+    }
+}
+</style>
+{% endblock %}

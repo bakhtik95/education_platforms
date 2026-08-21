@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}To'lov muvaffaqiyatli{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card auth-card-success">
+        <div class="success-animation">
+            <div class="success-circle">
+                <span class="success-check">✓</span>
+            </div>
+        </div>
+
+        <div class="auth-header">
+            <h1 class="auth-title">To'lov muvaffaqiyatli!</h1>
+            <p class="auth-subtitle">Kvitansiyangiz qabul qilindi</p>
+        </div>
+
+        <div class="success-info">
+            <div class="success-box">
+                <div class="success-item">
+                    <span class="item-label">👤 Foydalanuvchi:</span>
+                    <span class="item-value">{{ user.full_name }}</span>
+                </div>
+                <div class="success-item">
+                    <span class="item-label">🔑 Login:</span>
+                    <span class="item-value">{{ user.login }}</span>
+                </div>
+                <div class="success-item">
+                    <span class="item-label">📊 Holat:</span>
+                    <span class="item-value badge-pending">Tekshirilmoqda</span>
+                </div>
+                <div class="success-item">
+                    <span class="item-label">📅 Yuklangan:</span>
+                    <span class="item-value">{{ user.receipt_uploaded_at[:10] if user.receipt_uploaded_at else '-' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="success-message">
+            <div class="message-icon">✅</div>
+            <div class="message-text">
+                <p><strong>Kvitansiyangiz muvaffaqiyatli yuklandi!</strong></p>
+                <p>📱 Admin tomonidan tekshirilgandan so'ng sizga SMS orqali login va parol yuboriladi.</p>
+                <p>⏳ Bu jarayon 24 soatgacha davom etishi mumkin.</p>
+            </div>
+        </div>
+
+        <div class="success-tips">
+            <h4>💡 Keyingi qadamlar:</h4>
+            <ul>
+                <li>✓ SMS ni kuting</li>
+                <li>✓ Login va parolni saqlab qo'ying</li>
+                <li>✓ Tizimga kirib, kurslarni o'rganishni boshlang</li>
+            </ul>
+        </div>
+
+        <div class="success-actions">
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Kirish sahifasiga o'tish
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-card-success {
+    max-width: 500px;
+    text-align: center;
+}
+
+.success-animation {
+    margin-bottom: 20px;
+}
+
+.success-circle {
+    width: 80px;
+    height: 80px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: pulse 1.5s ease-in-out;
+}
+
+.success-check {
+    color: #fff;
+    font-size: 48px;
+    font-weight: 700;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-info {
+    margin: 24px 0;
+    text-align: left;
+}
+
+.success-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    border: 1px solid var(--border-color);
+}
+
+.success-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.success-item:last-child {
+    border-bottom: none;
+}
+
+.item-label {
+    color: var(--text-secondary);
+}
+
+.item-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.success-message {
+    display: flex;
+    gap: 16px;
+    background: rgba(76, 175, 80, 0.05);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin: 16px 0 20px;
+    text-align: left;
+}
+
+.message-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.message-text p {
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.message-text p:last-child {
+    margin-bottom: 0;
+}
+
+.message-text strong {
+    color: var(--text-primary);
+}
+
+.success-tips {
+    text-align: left;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.success-tips h4 {
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.success-tips ul {
+    list-style: none;
+    padding: 0;
+}
+
+.success-tips ul li {
+    color: var(--text-secondary);
+    padding: 4px 0;
+    font-size: 14px;
+}
+
+.badge-pending {
+    background: rgba(255, 152, 0, 0.15);
+    color: #FF9800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.success-actions {
+    margin-top: 16px;
+}
+
+@media (max-width: 480px) {
+    .success-item {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .success-message {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

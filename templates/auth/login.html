@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Tizimga kirish{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Tizimga kirish</h1>
+            <p class="auth-subtitle">Intellektual mulk markazi o'quv platformasiga</p> <p class="auth-subtitle"> xush kelibsiz</p>
+        </div>
+        
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="login">Login</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-user"></i></span>
+                    <input type="text" id="login" name="login" placeholder="Loginingizni kiriting" required autofocus>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Parol</label>
+                <div class="input-group">
+                    <span class="input-icon"><i class="fas fa-lock"></i></span>
+                    <input type="password" id="password" name="password" placeholder="Parolingizni kiriting" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-block">Kirish</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Ro‘yxatdan o‘maganmisiz? <a href="{{ url_for('auth.register') }}">Ro'yxatdan o'tish</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const password = document.getElementById('password');
+    const icon = document.querySelector('.toggle-password i');
+    if (password.type === 'password') {
+        password.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        password.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+</script>
+{% endblock %}
