@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Foydalanuvchilar{% endblock %}
+{% block page_title %}Foydalanuvchilar{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    <div class="admin-actions">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <form method="GET" action="{{ url_for('admin.admin_users') }}">
+                <input type="text" name="search" placeholder="Foydalanuvchi qidirish..." value="{{ query or '' }}">
+                <button type="submit" class="btn-small">Qidirish</button>
+            </form>
+        </div>
+        <a href="{{ url_for('admin.admin_user_create') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Yangi foydalanuvchi
+        </a>
+    </div>
+
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>F.I.Sh.</th>
+                    <th>Login</th>
+                    <th>Email</th>
+                    <th>Turi</th>
+                    <th>Holat</th>
+                    <th>Kurslar</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.full_name or user.login }}</td>
+                    <td>{{ user.login }}</td>
+                    <td>{{ user.email or '-' }}</td>
+                    <td>
+                        <span class="badge-{{ user.access_type }}">
+                            {{ user|user_access_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-{{ user.status }}">
+                            {{ user|user_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ user.courses_count }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('admin.admin_user_edit', user_id=user.id) }}"
+                               class="btn-small btn-edit" title="Tahrirlash">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('admin.admin_user_access', user_id=user.id) }}"
+                               class="btn-small btn-key" title="Kirish huquqi">
+                                <i class="fas fa-key"></i>
+                            </a>
+                            {% if user.status == 'blocked' %}
+                            <form method="POST" action="{{ url_for('admin.admin_user_unblock', user_id=user.id) }}" style="display:inline;">
+                                <button type="submit" class="btn-small btn-success" title="Blokdan chiqarish">
+                                    <i class="fas fa-unlock"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="POST" action="{{ url_for('admin.admin_user_block', user_id=user.id) }}" style="display:inline;">
+                                <button type="submit" class="btn-small btn-warning" title="Bloklash">
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('admin.admin_user_delete', user_id=user.id) }}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Foydalanuvchini o\'chirishga ishonchingiz komilmi?')">
+                                <button type="submit" class="btn-small btn-danger" title="O'chirish">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

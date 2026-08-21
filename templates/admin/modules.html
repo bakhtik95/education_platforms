@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Modullar{% endblock %}
+{% block page_title %}Modullar: {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.admin_courses') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kurslarga qaytish
+        </a>
+        <button onclick="showCreateModule()" class="btn-primary">
+            <i class="fas fa-plus"></i> Modul qo'shish
+        </button>
+    </div>
+
+    <div class="admin-card" id="createModuleForm" style="display: none;">
+        <h3>Yangi modul</h3>
+        <form method="POST" action="{{ url_for('admin.admin_module_create') }}">
+            <input type="hidden" name="course_id" value="{{ course.id }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="module_title">Modul nomi</label>
+                    <input type="text" id="module_title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="module_description">Tavsif</label>
+                    <input type="text" id="module_description" name="description">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="hideCreateModule()" class="btn-secondary">Bekor qilish</button>
+                <button type="submit" class="btn-primary">Yaratish</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="modules-list">
+        {% for module in modules %}
+        <div class="module-admin-card">
+            <div class="module-admin-header">
+                <div class="module-admin-info">
+                    <span class="module-order">{{ module.order }}</span>
+                    <h3>{{ module.title }}</h3>
+                    <span class="module-lessons-count">{{ module.lessons_count }} dars</span>
+                </div>
+                <div class="module-admin-actions">
+                    <a href="{{ url_for('admin.admin_lessons', module_id=module.id) }}" class="btn-small btn-info">
+                        <i class="fas fa-list"></i> Darslar
+                    </a>
+                    <button onclick="editModule('{{ module.id }}', '{{ module.title }}', '{{ module.description }}')"
+                            class="btn-small btn-edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <form method="POST" action="{{ url_for('admin.admin_module_delete', module_id=module.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Modulni o\'chirishga ishonchingiz komilmi?')">
+                        <button type="submit" class="btn-small btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="module-edit-form" id="editModule_{{ module.id }}" style="display: none;">
+                <form method="POST" action="{{ url_for('admin.admin_module_edit', module_id=module.id) }}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Modul nomi</label>
+                            <input type="text" name="title" id="edit_title_{{ module.id }}" value="{{ module.title }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Tavsif</label>
+                            <input type="text" name="description" id="edit_desc_{{ module.id }}" value="{{ module.description or '' }}">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="cancelEditModule('{{ module.id }}')" class="btn-secondary">Bekor qilish</button>
+                        <button type="submit" class="btn-primary">Saqlash</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function showCreateModule() {
+    document.getElementById('createModuleForm').style.display = 'block';
+}
+
+function hideCreateModule() {
+    document.getElementById('createModuleForm').style.display = 'none';
+}
+
+function editModule(moduleId, title, description) {
+    document.querySelectorAll('.module-edit-form').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.getElementById('editModule_' + moduleId).style.display = 'block';
+    document.getElementById('edit_title_' + moduleId).value = title;
+    document.getElementById('edit_desc_' + moduleId).value = description || '';
+}
+
+function cancelEditModule(moduleId) {
+    document.getElementById('editModule_' + moduleId).style.display = 'none';
+}
+</script>
+{% endblock %}

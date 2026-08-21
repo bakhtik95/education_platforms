@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Kurslar{% endblock %}
+{% block page_title %}Kurslar{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+    <div class="admin-actions">
+        <a href="{{ url_for('admin.admin_course_create') }}" class="btn-primary">
+            <i class="fas fa-plus"></i> Yangi kurs
+        </a>
+    </div>
+
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Rasm</th>
+                    <th>Nomi</th>
+                    <th>Turi</th>
+                    <th>Holat</th>
+                    <th>Modullar</th>
+                    <th>Darslar</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>
+                        {% if course.image and course.image != 'default_course.jpg' %}
+                            <img src="{{ url_for('static', filename='images/courses/' + course.image) }}"
+                                 alt="{{ course.title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+                        {% else %}
+                            <div style="width: 50px; height: 50px; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                                <i class="fas fa-image" style="font-size: 24px;"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ course.title }}</td>
+                    <td>
+                        <span class="badge-{{ course.type }}">
+                            {{ course|course_type_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-{{ course.status }}">
+                            {{ course|course_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ course.modules_count }}</td>
+                    <td>{{ course.lessons_count }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('admin.admin_modules', course_id=course.id) }}"
+                               class="btn-small btn-info" title="Modullar">
+                                <i class="fas fa-layer-group"></i>
+                            </a>
+                            <a href="{{ url_for('admin.admin_course_edit', course_id=course.id) }}"
+                               class="btn-small btn-edit" title="Tahrirlash">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.admin_course_delete', course_id=course.id) }}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Kursni o\'chirishga ishonchingiz komilmi?')">
+                                <button type="submit" class="btn-small btn-danger" title="O'chirish">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
