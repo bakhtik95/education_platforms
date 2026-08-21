@@ -1,0 +1,64 @@
+{
+  "lessons": [
+    {
+      "module_id": "MOD-000003",
+      "title": "test",
+      "type": "video",
+      "description": "test1",
+      "content": "test",
+      "order": 1,
+      "id": "LSN-000003",
+      "created_at": "2026-08-19 17:10:12",
+      "files": [],
+      "video": {
+        "filename": "83cc06aa_videoga_qo_shib_ber_va_imlo_xa.mp4",
+        "original_name": "videoga_qo_shib_ber_va_imlo_xa.mp4",
+        "size": 2541553,
+        "duration": 0,
+        "uploaded_at": "2026-08-19 17:10:28"
+      }
+    },
+    {
+      "module_id": "MOD-000003",
+      "title": "test2",
+      "type": "text",
+      "description": "test2",
+      "content": "test2",
+      "order": 2,
+      "id": "LSN-000005",
+      "created_at": "2026-08-19 17:48:35",
+      "files": [
+        {
+          "filename": "98364495_Geografik_korsatkich.pdf",
+          "original_name": "Geografik korsatkich.pdf",
+          "type": "document",
+          "size": 16908920,
+          "extension": ".pdf",
+          "id": "FIL-000005",
+          "uploaded_at": "2026-08-19 17:48:44"
+        },
+        {
+          "filename": "5ba9e1b0_1._ariza__2_.doc",
+          "original_name": "1. ariza (2).doc",
+          "type": "document",
+          "size": 60928,
+          "extension": ".doc",
+          "id": "FIL-000006",
+          "uploaded_at": "2026-08-19 18:33:48"
+        },
+        {
+          "filename": "6d3dba58_FFF.pptx",
+          "original_name": "FFF.pptx",
+          "type": "presentation",
+          "size": 383001,
+          "extension": ".pptx",
+          "id": "FIL-000007",
+          "uploaded_at": "2026-08-19 18:33:55"
+        }
+      ],
+      "updated_at": "2026-08-19 18:33:41"
+    }
+  ],
+  "last_id": 5,
+  "last_file_id": 7
+}

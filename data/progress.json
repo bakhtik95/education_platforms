@@ -1,0 +1,65 @@
+{
+  "progress": [
+    {
+      "user_id": "USR-000009",
+      "course_id": "CRS-000001",
+      "module_id": "MOD-000001",
+      "lesson_id": "LSN-000001",
+      "video_position": 0,
+      "completed": true,
+      "id": "PRG-000004",
+      "updated_at": "2026-08-19 16:42:42"
+    },
+    {
+      "user_id": "USR-000009",
+      "course_id": "CRS-000002",
+      "module_id": "MOD-000003",
+      "lesson_id": "LSN-000003",
+      "video_position": 5,
+      "completed": true,
+      "id": "PRG-000005",
+      "updated_at": "2026-08-21 12:15:46"
+    },
+    {
+      "user_id": "USR-000009",
+      "course_id": "CRS-000002",
+      "module_id": "MOD-000003",
+      "lesson_id": "LSN-000004",
+      "video_position": 0,
+      "completed": true,
+      "id": "PRG-000006",
+      "updated_at": "2026-08-19 17:42:59"
+    },
+    {
+      "user_id": "USR-000009",
+      "course_id": "CRS-000002",
+      "module_id": "MOD-000003",
+      "lesson_id": "LSN-000005",
+      "video_position": 0,
+      "completed": true,
+      "id": "PRG-000007",
+      "updated_at": "2026-08-19 18:33:11"
+    },
+    {
+      "user_id": "USR-000012",
+      "course_id": "CRS-000002",
+      "module_id": "MOD-000003",
+      "lesson_id": "LSN-000003",
+      "video_position": 5,
+      "completed": true,
+      "id": "PRG-000008",
+      "updated_at": "2026-08-21 12:59:24"
+    },
+    {
+      "user_id": "USR-000012",
+      "course_id": "CRS-000002",
+      "module_id": "MOD-000003",
+      "lesson_id": "LSN-000005",
+      "video_position": 0,
+      "completed": true,
+      "id": "PRG-000009",
+      "updated_at": "2026-08-21 12:59:33"
+    }
+  ],
+  "last_id": 9
+}
